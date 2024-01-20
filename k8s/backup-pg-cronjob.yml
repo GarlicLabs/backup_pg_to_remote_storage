@@ -1,0 +1,24 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: backup-pg-to-remote-storage
+spec:
+  schedule: "0 0 * * 0"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: backup-pg-to-remote-storage
+              image: backup-pg-to-remote-storage:latest
+              envFrom:
+                - secretRef:
+                    name: postgres-secret.yml
+              volumeMounts:
+                - name: postgres-secret
+                  mountPath: /etc/postgres-secret.yml
+                  readOnly: true
+          volumes:
+            - name: postgres-secret
+              secret:
+                secretName: postgres-secret
