@@ -27,7 +27,7 @@ jobs:
       - name: Install go dependencies
         run: make update
 
-      - name: Install go dependencies
+      - name: Run unit tests
         run: make unittests
 
       - name: Build go app
@@ -49,5 +49,5 @@ jobs:
       - name: Cleanup
         run: |
           docker logout ghcr.io
-          rm backup-pg-to-remote-storage
+          rm backup_pg_to_remote_storage
           docker rmi backup-pg-to-remote-storage
