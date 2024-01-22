@@ -11,21 +11,21 @@ import (
 )
 
 type RemoteStorage interface {
-	Upload(cfg config.StorageConfig, file string)
-	Delete(cfg config.StorageConfig, file string)
-	RetentionDelete(cfg config.StorageConfig)
+	Upload(cfg config.Storage, file string)
+	Delete(cfg config.Storage, file string)
+	RetentionDelete(cfg config.Storage)
 }
 
 func main() {
 
 	cfg := getConfig()
-	err := config.ValidateConfig(cfg)
+	err := config.Validate(cfg)
 	if err != nil {
 		log.Panicf("Configuration is invalid see error: %s", err.Error())
 	}
 
 	for _, database := range cfg.Databases {
-		dbCfg := config.PutGlobalStorageToDbIfNotSet(database, cfg.GlobalStorageConfig)
+		dbCfg := config.MapGlobalStorageToDbIfNotSet(database, cfg.GlobalStorageConfig)
 		dumpFile := dumpDatabase(dbCfg)
 		getStorageProvider(dbCfg.StorageConfig).Upload(dbCfg.StorageConfig, dumpFile)
 		getStorageProvider(dbCfg.StorageConfig).RetentionDelete(dbCfg.StorageConfig)
@@ -33,9 +33,8 @@ func main() {
 	}
 }
 
-// TODO unit test
-func getStorageProvider(cfg config.StorageConfig) RemoteStorage {
-	if cfg.S3Config != (config.S3Config{}) {
+func getStorageProvider(cfg config.Storage) RemoteStorage {
+	if cfg.S3Config != (config.S3{}) {
 		return storage.S3Storage{}
 	} else {
 		log.Panicf("No storage provider configured")
@@ -61,7 +60,7 @@ func getConfig() config.Config {
 	return config
 }
 
-func dumpDatabase(databaseConfig config.DatabaseConfig) string {
+func dumpDatabase(databaseConfig config.Database) string {
 	log.Infof("Starting dumping Database %s at %s", databaseConfig.Database, databaseConfig.Host)
 	dumper, err := pg.NewDump(&pg.Postgres{
 		Host:     databaseConfig.Host,

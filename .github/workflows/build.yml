@@ -25,12 +25,13 @@ jobs:
           go-version: 1.20
 
       - name: Install go dependencies
-        run: |
-          go mod download
-          go list -m all
+        run: make update
+
+      - name: Install go dependencies
+        run: make unittests
 
       - name: Build go app
-        run: go build -o backup-pg-to-remote-storage .
+        run: make build
 
       - name: Package go app
         run: docker build -t backup-pg-to-remote-storage .

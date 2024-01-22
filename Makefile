@@ -9,3 +9,6 @@ update: ## Installs all dependencies
 
 build: ## Build this software
 	@go build -o backup_to_remote_storage cmd/main.go || echo "go build failed"
+
+unittests: ## Executes all unit tests
+	@go test ./cmd/...

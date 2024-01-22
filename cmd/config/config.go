@@ -6,46 +6,67 @@ import (
 )
 
 type Config struct {
-	GlobalStorageConfig StorageConfig    `yaml:"storage"`
-	Databases           []DatabaseConfig `yaml:"databases" validate:"required"`
+	GlobalStorageConfig Storage    `yaml:"storage" validate:"omitempty"`
+	Databases           []Database `yaml:"databases" validate:"required,min=1,dive,customDatabaseValidation"`
 }
 
-type DatabaseConfig struct {
-	Host          string        `yaml:"host" validate:"required,fqdn"`
-	Port          int           `yaml:"port" validate:"required"`
-	Database      string        `yaml:"database" validate:"required"`
-	Username      string        `yaml:"username" validate:"required"`
-	Password      string        `yaml:"password" validate:"required"`
-	Retention     int           `yaml:"retention" validate:"required"`
-	StorageConfig StorageConfig `yaml:"storageConfig"`
+type Database struct {
+	Host          string  `yaml:"host" validate:"required"`
+	Port          int     `yaml:"port" validate:"required,min=1"`
+	Database      string  `yaml:"database" validate:"required,min=1"`
+	Username      string  `yaml:"username" validate:"required,min=1"`
+	Password      string  `yaml:"password" validate:"required,min=1"`
+	Retention     int     `yaml:"retention" validate:"required,min=1"`
+	StorageConfig Storage `yaml:"storageConfig" validate:"omitempty"`
 }
 
-type StorageConfig struct {
-	S3Config S3Config `yaml:"s3"`
+type Storage struct {
+	//Change validate required to required_if, when we support for more storage providers
+	S3Config S3 `yaml:"s3" validate:"required"`
 }
 
-type S3Config struct {
+type S3 struct {
 	Endpoint  string `yaml:"endpoint" validate:"required"`
 	AccessKey string `yaml:"accessKey" validate:"required"`
 	SecretKey string `yaml:"secretKey" validate:"required"`
 	Bucket    string `yaml:"bucket" validate:"required"`
 }
 
-// Validates given configuration with github.com/go-playground/validator/v10 library
-func ValidateConfig(config Config) error {
+func customDatabaseValidation(fl validator.FieldLevel) bool {
+	config, ok := fl.Parent().Interface().(Config)
+	if !ok {
+		return false
+	}
+	if (config.GlobalStorageConfig != Storage{}) {
+		return true
+	}
 	validate := validator.New()
-	err := validate.Struct(config)
+
+	for _, database := range config.Databases {
+		err := validate.Struct(database.StorageConfig.S3Config)
+		if err != nil {
+			return false
+		}
+	}
+	return true
+}
+
+// Validates given configuration with github.com/go-playground/validator/v10 library
+func Validate(cfg Config) error {
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	validate.RegisterValidation("customDatabaseValidation", customDatabaseValidation)
+	err := validate.Struct(cfg)
+
 	if err != nil {
-		log.Errorf("Validation failed")
 		return err
 	} else {
-		log.Infof("Validation succeeded")
+		log.Debugf("Validation succeeded")
 	}
 	return nil
 }
 
 // TODO needs unit test
-func PutGlobalStorageToDbIfNotSet(databaseConfig DatabaseConfig, GlobalS3Config StorageConfig) DatabaseConfig {
+func MapGlobalStorageToDbIfNotSet(databaseConfig Database, GlobalS3Config Storage) Database {
 	builtConfig := databaseConfig
 	if databaseConfig.StorageConfig.S3Config.Endpoint == "" {
 		builtConfig.StorageConfig.S3Config.Endpoint = GlobalS3Config.S3Config.Endpoint

@@ -2,11 +2,10 @@
 
 ----
 
-* Config Unittests
-* S3
-* Integration tests
-* Deployment
 * Write README
+* S3
+* Deployment
+* Integration tests
 
 ----
 

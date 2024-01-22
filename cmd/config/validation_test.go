@@ -2,145 +2,145 @@ package config
 
 import (
 	"testing"
+
+	log "github.com/sirupsen/logrus"
 )
 
-//TODO do validation unittests
-//TODO validate that StorageConfig has at least one filled object!
-// Test Databases is empty
-
 func TestValidConfigWithGlobalStorageConfig(t *testing.T) {
-	var dbCfg []DatabaseConfig
+	var dbCfg []Database
 	dbCfg = append(dbCfg, validDbConfigWithoutStorage0)
 	dbCfg = append(dbCfg, validDbConfigWithoutStorage1)
 
 	cfg := Config{validStorageConfig, dbCfg}
 
-	err := ValidateConfig(cfg)
+	err := Validate(cfg)
 	if err != nil {
+		log.Error(err)
 		t.Fatalf("Validation should not fail as config is valid")
 	}
 }
 
 func TestValidConfigWithDatabaseStorageConfig(t *testing.T) {
-	var dbCfg []DatabaseConfig
-	dbCfg = append(dbCfg, validDbConfigWithoutStorage0)
-	dbCfg = append(dbCfg, validDbConfigWithoutStorage1)
+	var dbCfg []Database
+	dbCfg = append(dbCfg, validDbConfigWithStorage0)
+	dbCfg = append(dbCfg, validDbConfigWithStorage1)
 
-	cfg := Config{StorageConfig{}, dbCfg}
+	cfg := Config{Storage{}, dbCfg}
 
-	err := ValidateConfig(cfg)
+	err := Validate(cfg)
 	if err != nil {
+		log.Error(err)
 		t.Fatalf("Validation should not fail as config is valid")
 	}
 }
 
 func TestInvalidGlobalStorageConfig(t *testing.T) {
-	var dbCfg []DatabaseConfig
+	var dbCfg []Database
 	dbCfg = append(dbCfg, validDbConfigWithoutStorage0)
 
 	cfg := Config{invalidStorageConfig, dbCfg}
 
-	err := ValidateConfig(cfg)
+	err := Validate(cfg)
 	if err == nil {
 		t.Fatalf("Validation should fail, storage config is invalid")
 	}
 }
 
 func TestInvalidDatabaseConfig(t *testing.T) {
-	var dbCfg []DatabaseConfig
+	var dbCfg []Database
 	dbCfg = append(dbCfg, invalidDbConfigWithoutStorage0)
 
 	cfg := Config{validStorageConfig, dbCfg}
 
-	err := ValidateConfig(cfg)
+	err := Validate(cfg)
 	if err == nil {
 		t.Fatalf("Validation should fail, database config is invalid")
 	}
 }
 
 func TestNoConfigIsGiven(t *testing.T) {
-	cfg := Config{StorageConfig{}, []DatabaseConfig{}}
-	err := ValidateConfig(cfg)
+	cfg := Config{Storage{}, []Database{}}
+	err := Validate(cfg)
 	if err == nil {
 		t.Fatalf("Validation should fail, as no config is given")
 	}
 }
 
 func TestInvalidDatabaseConfigAndValidStorageConfig(t *testing.T) {
-	var dbCfg []DatabaseConfig
+	var dbCfg []Database
 	dbCfg = append(dbCfg, invalidDbConfigWithoutStorage0)
 
 	cfg := Config{validStorageConfig, dbCfg}
-	err := ValidateConfig(cfg)
+	err := Validate(cfg)
 	if err == nil {
 		t.Fatalf("Validation should fail, as database config is invalid")
 	}
 }
 
 func TestInvalidGlobalStorageAndNoStorageConfig(t *testing.T) {
-	var dbCfg []DatabaseConfig
+	var dbCfg []Database
 	dbCfg = append(dbCfg, validDbConfigWithoutStorage0)
 
 	cfg := Config{invalidStorageConfig, dbCfg}
-	err := ValidateConfig(cfg)
+	err := Validate(cfg)
 	if err == nil {
 		t.Fatalf("Validation should fail, as no valid storage config and invalid global storage config")
 	}
 }
 
 func TestNoGlobalStorageConfigAndNoDbStorageConfig(t *testing.T) {
-	var dbCfg []DatabaseConfig
+	var dbCfg []Database
 	dbCfg = append(dbCfg, validDbConfigWithoutStorage0)
 
-	cfg := Config{StorageConfig{}, dbCfg}
-	err := ValidateConfig(cfg)
+	cfg := Config{Storage{}, dbCfg}
+	err := Validate(cfg)
 	if err == nil {
 		t.Fatalf("Validation should fail, as no StorageConfig was provied")
 	}
 }
 
 func TestNoGlobalStorageConfigAndNoS3ConfigOnDb(t *testing.T) {
-	var dbCfg []DatabaseConfig
+	var dbCfg []Database
 	validDbConfigWithoutStorage0.StorageConfig = invalidStorageConfigNoConfig
 	dbCfg = append(dbCfg, validDbConfigWithoutStorage0)
 
-	cfg := Config{StorageConfig{}, dbCfg}
-	err := ValidateConfig(cfg)
+	cfg := Config{Storage{}, dbCfg}
+	err := Validate(cfg)
 	if err == nil {
 		t.Fatalf("Validation should fail, as no StorageConfig was provied")
 	}
 }
 
-var validS3Config = S3Config{
+var validS3Config = S3{
 	Endpoint:  "localhost",
 	AccessKey: "accessKey",
 	SecretKey: "secretKey",
 	Bucket:    "bucket",
 }
 
-var validStorageConfig = StorageConfig{
+var validStorageConfig = Storage{
 	S3Config: validS3Config,
 }
 
-var invalidStorageConfigNoConfig = StorageConfig{}
+var invalidStorageConfigNoConfig = Storage{}
 
-var invalidS3Config = S3Config{
+var invalidS3Config = S3{
 	AccessKey: "accessKey",
 	Bucket:    "bucket",
 }
 
-var invalidStorageConfig = StorageConfig{
+var invalidStorageConfig = Storage{
 	S3Config: invalidS3Config,
 }
 
-var invalidDbConfigWithoutStorage0 = DatabaseConfig{
+var invalidDbConfigWithoutStorage0 = Database{
 	Host:      "xxx",
 	Port:      5432,
 	Password:  "password",
 	Retention: 30,
 }
 
-var validDbConfigWithoutStorage0 = DatabaseConfig{
+var validDbConfigWithoutStorage0 = Database{
 	Host:      "postgres.example.com",
 	Port:      5432,
 	Database:  "Database",
@@ -149,7 +149,7 @@ var validDbConfigWithoutStorage0 = DatabaseConfig{
 	Retention: 30,
 }
 
-var validDbConfigWithoutStorage1 = DatabaseConfig{
+var validDbConfigWithoutStorage1 = Database{
 	Host:      "127.0.0.1",
 	Port:      5432,
 	Database:  "Database",
@@ -158,7 +158,7 @@ var validDbConfigWithoutStorage1 = DatabaseConfig{
 	Retention: 30,
 }
 
-var validDbConfigWithStorage0 = DatabaseConfig{
+var validDbConfigWithStorage0 = Database{
 	Host:          "postgres.example.com",
 	Port:          5432,
 	Database:      "Database",
@@ -168,7 +168,7 @@ var validDbConfigWithStorage0 = DatabaseConfig{
 	StorageConfig: validStorageConfig,
 }
 
-var validDbConfigWithStorage1 = DatabaseConfig{
+var validDbConfigWithStorage1 = Database{
 	Host:          "127.0.0.1",
 	Port:          5432,
 	Database:      "Database",

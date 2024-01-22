@@ -16,7 +16,7 @@ type S3Storage struct {
 	Bucket    string `yaml:"bucket"`
 }
 
-func initializeS3Client(s3Config config.S3Config) *minio.Client {
+func initializeS3Client(s3Config config.S3) *minio.Client {
 	log.Info("Initializing the S3 Client.")
 	useSSL := true
 
@@ -37,7 +37,7 @@ func initializeS3Client(s3Config config.S3Config) *minio.Client {
 	return minioClient
 }
 
-func (s3 S3Storage) Upload(storageCfg config.StorageConfig, file string) {
+func (s3 S3Storage) Upload(storageCfg config.Storage, file string) {
 	cfg := storageCfg.S3Config
 	ctx := context.Background()
 
@@ -55,11 +55,11 @@ func (s3 S3Storage) Upload(storageCfg config.StorageConfig, file string) {
 	log.Infof("Successfully uploaded %s to %s", file, minioClient.EndpointURL())
 
 }
-func (s3 S3Storage) Delete(storageCfg config.StorageConfig, file string) {
+func (s3 S3Storage) Delete(storageCfg config.Storage, file string) {
 	//cfg := storageCfg.S3Config
 
 }
-func (s3 S3Storage) RetentionDelete(storageCfg config.StorageConfig) {
+func (s3 S3Storage) RetentionDelete(storageCfg config.Storage) {
 	//cfg := storageCfg.S3Config
 
 }
