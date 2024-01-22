@@ -7,7 +7,7 @@ import (
 
 type Config struct {
 	GlobalStorageConfig Storage    `yaml:"storage" validate:"omitempty"`
-	Databases           []Database `yaml:"databases" validate:"required,min=1,dive,customDatabaseValidation"`
+	Databases           []Database `yaml:"databases" validate:"required,min=1,dive,validateStorageIsSet"`
 }
 
 type Database struct {
@@ -17,7 +17,7 @@ type Database struct {
 	Username      string  `yaml:"username" validate:"required,min=1"`
 	Password      string  `yaml:"password" validate:"required,min=1"`
 	Retention     int     `yaml:"retention" validate:"required,min=1"`
-	StorageConfig Storage `yaml:"storageConfig" validate:"omitempty"`
+	StorageConfig Storage `yaml:"storage" validate:"omitempty"`
 }
 
 type Storage struct {
@@ -32,19 +32,21 @@ type S3 struct {
 	Bucket    string `yaml:"bucket" validate:"required"`
 }
 
-func customDatabaseValidation(fl validator.FieldLevel) bool {
+func validateStorageIsSet(fl validator.FieldLevel) bool {
 	config, ok := fl.Parent().Interface().(Config)
 	if !ok {
+		log.Errorf("Not ok on validateStorageIsSet")
 		return false
 	}
 	if (config.GlobalStorageConfig != Storage{}) {
+		log.Debugf("GlobalStorageConfig is set")
 		return true
 	}
 	validate := validator.New()
-
 	for _, database := range config.Databases {
 		err := validate.Struct(database.StorageConfig.S3Config)
 		if err != nil {
+			log.Errorf("%+v\n", err)
 			return false
 		}
 	}
@@ -54,7 +56,7 @@ func customDatabaseValidation(fl validator.FieldLevel) bool {
 // Validates given configuration with github.com/go-playground/validator/v10 library
 func Validate(cfg Config) error {
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	validate.RegisterValidation("customDatabaseValidation", customDatabaseValidation)
+	validate.RegisterValidation("validateStorageIsSet", validateStorageIsSet)
 	err := validate.Struct(cfg)
 
 	if err != nil {

@@ -44,7 +44,7 @@ func getStorageProvider(cfg config.Storage) RemoteStorage {
 
 func getConfig() config.Config {
 	log.Info("Reading config file")
-	f, err := os.ReadFile("secret.yml")
+	f, err := os.ReadFile("config.yml")
 
 	if err != nil {
 		log.Error(err)

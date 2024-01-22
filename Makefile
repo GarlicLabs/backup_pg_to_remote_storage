@@ -5,7 +5,6 @@ help: ## Prints help for targets with comments
 
 update: ## Installs all dependencies
 	@go mod download
-	@go list -m all
 
 build: ## Build this software
 	@go build -o backup_to_remote_storage cmd/main.go || echo "go build failed"
