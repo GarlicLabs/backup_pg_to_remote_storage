@@ -8,7 +8,6 @@ backup_pg_to_remote_storage is a small programm to dump postgres databases and s
 The container image is weekly updated with the stable debian image.
 If you are using the container image make sure to pull regulary, the tag is always `latest`.
 
-
 ### Setup config
 
 // TODO: Put in readme/docs, that the global s3 config has to be set in any case, but can be overridden for any database. You can just override the bucket and leave the default endpoint and keys as is, but if these need to be changed, you have to set all the values on the database if needed.
@@ -23,7 +22,7 @@ docker run ghcr.io/garliclabs/backup-pg-to-remote-storage:latest
 ### Just use the program
 
 ```bash
-#TODO define config
+#The config.yml file inside the directory of the binary will be used, if there is no the process will end with an error
 go build
 ./backup-pg-to-remote-storage
 ```
