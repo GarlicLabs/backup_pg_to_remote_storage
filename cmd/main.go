@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/garliclabs/backup-pg-to-remote-storage/cmd/config"
+	"github.com/garliclabs/backup-pg-to-remote-storage/cmd/storage"
 	pg "github.com/habx/pg-commands"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -26,15 +27,16 @@ func main() {
 	for _, database := range cfg.Databases {
 		dbCfg := config.PutGlobalStorageToDbIfNotSet(database, cfg.GlobalStorageConfig)
 		dumpFile := dumpDatabase(dbCfg)
-		getStorageProvider(dbCfg.StorageConfig).Upload()
-		getStorageProvider(dbCfg.StorageConfig).RetentionDelete()
+		getStorageProvider(dbCfg.StorageConfig).Upload(dbCfg.StorageConfig, dumpFile)
+		getStorageProvider(dbCfg.StorageConfig).RetentionDelete(dbCfg.StorageConfig)
 		removeDumpFromFilesystem(dumpFile)
 	}
 }
 
+// TODO unit test
 func getStorageProvider(cfg config.StorageConfig) RemoteStorage {
-	if cfg.S3Config != nil {
-		return S3Storage{}
+	if cfg.S3Config != (config.S3Config{}) {
+		return storage.S3Storage{}
 	} else {
 		log.Panicf("No storage provider configured")
 		return nil
