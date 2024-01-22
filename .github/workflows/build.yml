@@ -49,5 +49,3 @@ jobs:
       - name: Cleanup
         run: |
           docker logout ghcr.io
-          rm backup_pg_to_remote_storage
-          docker rmi backup-pg-to-remote-storage
