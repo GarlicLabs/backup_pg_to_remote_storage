@@ -67,7 +67,6 @@ func Validate(cfg Config) error {
 	return nil
 }
 
-// TODO needs unit test
 func MapGlobalStorageToDbIfNotSet(databaseConfig Database, GlobalS3Config Storage) Database {
 	builtConfig := databaseConfig
 	if databaseConfig.StorageConfig.S3Config.Endpoint == "" {
