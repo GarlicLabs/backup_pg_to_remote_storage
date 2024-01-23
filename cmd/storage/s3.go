@@ -26,7 +26,7 @@ func initializeS3Client(s3Config config.S3) *minio.Client {
 		Creds:  creds,
 		Secure: useSSL,
 	}
-	// Initialize minio client object.
+	// Initialize minio client object
 	minioClient, err := minio.New(s3Config.Endpoint, options)
 	if err != nil {
 		log.Errorf("Connection to S3 Storage at %s failed.", s3Config.Endpoint)
@@ -37,7 +37,7 @@ func initializeS3Client(s3Config config.S3) *minio.Client {
 	return minioClient
 }
 
-func (s3 S3Storage) Upload(storageCfg config.Storage, file string) {
+func (s3 S3Storage) Upload(storageCfg config.Storage, file string) error {
 	cfg := storageCfg.S3Config
 	ctx := context.Background()
 
@@ -53,15 +53,16 @@ func (s3 S3Storage) Upload(storageCfg config.Storage, file string) {
 		log.Error(err)
 	}
 	log.Infof("Successfully uploaded %s to %s", file, minioClient.EndpointURL())
-
+	return nil
 }
-func (s3 S3Storage) Delete(storageCfg config.Storage, file string) {
-	//cfg := storageCfg.S3Config
 
+func (s3 S3Storage) Delete(storageCfg config.Storage, file string) error {
+	//cfg := storageCfg.S3Config
+	return nil
 }
-func (s3 S3Storage) RetentionDelete(storageCfg config.Storage) {
+func (s3 S3Storage) RetentionDelete(storageCfg config.Storage) error {
 	//cfg := storageCfg.S3Config
-
+	return nil
 }
 
 //////////////////////////////////////////////////////

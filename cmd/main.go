@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/garliclabs/backup-pg-to-remote-storage/cmd/config"
@@ -56,6 +57,10 @@ func getStorageProvider(cfg config.Storage) RemoteStorage {
 
 func getConfig() config.Config {
 	log.Info("Reading config file")
+	asd, _ := os.ReadDir(".")
+	for _, e := range asd {
+		fmt.Println(e.Name())
+	}
 	f, err := os.ReadFile("config.yml")
 
 	if err != nil {
