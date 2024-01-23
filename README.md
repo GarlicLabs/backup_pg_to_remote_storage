@@ -3,10 +3,14 @@
 backup_pg_to_remote_storage is a small programm to dump postgres databases and store them into a remote storage.  
 ! Currently just s3 is supported as a remote storage, extending the program to support more remote storage can be easily implemented.  
 
-## Usage
+## TODO Usage
+
+!!The program will not fail if a database is not dumpable or if the storage has an issue it will continue with the next one.  
 
 The container image is weekly updated with the stable debian image.
 If you are using the container image make sure to pull regulary, the tag is always `latest`.
+
+If you prefere to use the binary, you need to have a postgres-client install on your operating system.  
 
 ### Setup config
 
@@ -29,7 +33,7 @@ go build
 
 ### Kubernetes
 
-We provide some kubernetes manifest files (see `/k8s/`), for an easier kubernetes deployment.  
+We provide some kubernetes manifest files (see `./k8s/`), for an easier kubernetes deployment.  
 
 ## Development
 
@@ -38,6 +42,7 @@ We provide some kubernetes manifest files (see `/k8s/`), for an easier kubernete
 * docker & docker-compose
 * golang > 1.20
 * For convinece Make
+* Postgres client
 
 ### Download dependecies and build
 

@@ -11,9 +11,9 @@ import (
 )
 
 type RemoteStorage interface {
-	Upload(cfg config.Storage, file string)
-	Delete(cfg config.Storage, file string)
-	RetentionDelete(cfg config.Storage)
+	Upload(cfg config.Storage, file string) error
+	Delete(cfg config.Storage, file string) error
+	RetentionDelete(cfg config.Storage) error
 }
 
 func main() {
@@ -26,9 +26,21 @@ func main() {
 
 	for _, database := range cfg.Databases {
 		dbCfg := config.MapGlobalStorageToDbIfNotSet(database, cfg.GlobalStorageConfig)
-		dumpFile := dumpDatabase(dbCfg)
-		getStorageProvider(dbCfg.StorageConfig).Upload(dbCfg.StorageConfig, dumpFile)
-		getStorageProvider(dbCfg.StorageConfig).RetentionDelete(dbCfg.StorageConfig)
+		dumpFile, err := dumpDatabase(dbCfg)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		err = getStorageProvider(dbCfg.StorageConfig).Upload(dbCfg.StorageConfig, dumpFile)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
+		err = getStorageProvider(dbCfg.StorageConfig).RetentionDelete(dbCfg.StorageConfig)
+		if err != nil {
+			log.Error(err)
+			continue
+		}
 		removeDumpFromFilesystem(dumpFile)
 	}
 }
@@ -60,7 +72,7 @@ func getConfig() config.Config {
 	return config
 }
 
-func dumpDatabase(databaseConfig config.Database) string {
+func dumpDatabase(databaseConfig config.Database) (string, error) {
 	log.Infof("Starting dumping Database %s at %s", databaseConfig.Database, databaseConfig.Host)
 	dumper, err := pg.NewDump(&pg.Postgres{
 		Host:     databaseConfig.Host,
@@ -70,18 +82,17 @@ func dumpDatabase(databaseConfig config.Database) string {
 		Password: databaseConfig.Password,
 	})
 	if err != nil {
-		log.Error(err)
+		return "", err
 	}
 
 	dump := dumper.Exec(pg.ExecOptions{StreamPrint: false})
 	if dump.Error != nil {
-		log.Error(dump.Error.Err)
 		log.Error(dump.Output)
-
+		return "", dump.Error.Err
 	} else {
 		log.Infof("Dumping Database %s at %s success", databaseConfig.Database, databaseConfig.Host)
 	}
-	return dump.File
+	return dump.File, nil
 }
 
 func removeDumpFromFilesystem(File string) {

@@ -12,3 +12,6 @@ build: ## Build this software
 
 unittests: ## Executes all unit tests
 	@go test ./cmd/...
+
+package: ## Create container image tagged with `latest` via docker cli
+	@docker build -t backup-pg-to-remote-storage .
