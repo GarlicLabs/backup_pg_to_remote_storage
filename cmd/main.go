@@ -1,14 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/garliclabs/backup-pg-to-remote-storage/cmd/config"
 	"github.com/garliclabs/backup-pg-to-remote-storage/cmd/storage"
 	pg "github.com/habx/pg-commands"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 )
 
 type RemoteStorage interface {
@@ -19,7 +17,7 @@ type RemoteStorage interface {
 
 func main() {
 
-	cfg := getConfig()
+	cfg := config.GetConfig()
 	err := config.Validate(cfg)
 	if err != nil {
 		log.Panicf("Configuration is invalid see error: %s", err.Error())
@@ -56,28 +54,6 @@ func getStorageProvider(cfg config.Storage) RemoteStorage {
 		log.Panicf("No storage provider configured")
 		return nil
 	}
-}
-
-func getConfig() config.Config {
-	log.Info("Reading config file")
-	asd, _ := os.ReadDir(".")
-	for _, e := range asd {
-		fmt.Println(e.Name())
-	}
-	f, err := os.ReadFile("config.yml")
-
-	if err != nil {
-		log.Error(err)
-	}
-
-	var config config.Config
-	err = yaml.Unmarshal(f, &config)
-
-	if err != nil {
-		log.Error(err)
-	}
-
-	return config
 }
 
 func dumpDatabase(databaseConfig config.Database) (string, error) {

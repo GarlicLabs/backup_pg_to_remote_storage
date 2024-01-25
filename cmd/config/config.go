@@ -1,8 +1,12 @@
 package config
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/go-playground/validator/v10"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
@@ -30,6 +34,28 @@ type S3 struct {
 	AccessKey string `yaml:"accessKey" validate:"required"`
 	SecretKey string `yaml:"secretKey" validate:"required"`
 	Bucket    string `yaml:"bucket" validate:"required"`
+}
+
+func GetConfig() Config {
+	log.Info("Reading config file")
+	asd, _ := os.ReadDir(".")
+	for _, e := range asd {
+		fmt.Println(e.Name())
+	}
+	f, err := os.ReadFile("config.yml")
+
+	if err != nil {
+		log.Error(err)
+	}
+
+	var config Config
+	err = yaml.Unmarshal(f, &config)
+
+	if err != nil {
+		log.Error(err)
+	}
+
+	return config
 }
 
 func validateStorageIsSet(fl validator.FieldLevel) bool {
