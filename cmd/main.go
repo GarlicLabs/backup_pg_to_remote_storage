@@ -30,16 +30,19 @@ func main() {
 		dumpFile, err := dumpDatabase(dbCfg)
 		if err != nil {
 			log.Error(err)
+			removeDumpFromFilesystem(dumpFile)
 			continue
 		}
 		err = getStorageProvider(dbCfg.StorageConfig).Upload(dbCfg.StorageConfig, dumpFile)
 		if err != nil {
 			log.Error(err)
+			removeDumpFromFilesystem(dumpFile)
 			continue
 		}
 		err = getStorageProvider(dbCfg.StorageConfig).RetentionDelete(dbCfg.StorageConfig, database)
 		if err != nil {
 			log.Error(err)
+			removeDumpFromFilesystem(dumpFile)
 			continue
 		}
 		removeDumpFromFilesystem(dumpFile)
