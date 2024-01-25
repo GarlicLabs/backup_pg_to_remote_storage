@@ -14,7 +14,7 @@ import (
 type RemoteStorage interface {
 	Upload(cfg config.Storage, file string) error
 	Delete(cfg config.Storage, file string) error
-	RetentionDelete(cfg config.Storage) error
+	RetentionDelete(cfg config.Storage, dbConfig config.Database) error
 }
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 			log.Error(err)
 			continue
 		}
-		err = getStorageProvider(dbCfg.StorageConfig).RetentionDelete(dbCfg.StorageConfig)
+		err = getStorageProvider(dbCfg.StorageConfig).RetentionDelete(dbCfg.StorageConfig, database)
 		if err != nil {
 			log.Error(err)
 			continue
