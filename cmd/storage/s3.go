@@ -73,8 +73,8 @@ func (s3 S3Storage) Delete(storageCfg config.Storage, file string) error {
 	return nil
 }
 
-func (s3 S3Storage) RetentionDelete(storageCfg config.Storage, dbConfig config.Database) error {
-	cfg := storageCfg.S3Config
+func (s3 S3Storage) RetentionDelete(dbConfig config.Database) error {
+	cfg := dbConfig.StorageConfig.S3Config
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -97,7 +97,7 @@ func (s3 S3Storage) RetentionDelete(storageCfg config.Storage, dbConfig config.D
 		is_age_bigger_than_retention := ageInHours > float64(retentionInHours)
 
 		if is_age_bigger_than_retention {
-			err := s3.Delete(storageCfg, object.Key)
+			err := s3.Delete(dbConfig.StorageConfig, object.Key)
 			if err != nil {
 				return err
 			}
