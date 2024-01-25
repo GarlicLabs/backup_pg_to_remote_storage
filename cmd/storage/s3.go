@@ -29,7 +29,7 @@ func (s3 S3Storage) initClient(s3Config config.S3) (*minio.Client, error) {
 	}
 	minioClient, err := minio.New(s3Config.Endpoint, options)
 	if err != nil {
-		log.Errorf("Connection to S3 Storage at %s failed.", cfg.Endpoint)
+		log.Errorf("Connection to S3 Storage at %s failed.", s3Config.Endpoint)
 		return nil, err
 	} else {
 		log.Infof("Connection to S3 Storage at %s succeeded.", s3Config.Endpoint)
