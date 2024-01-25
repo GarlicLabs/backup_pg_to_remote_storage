@@ -104,6 +104,7 @@ func dumpDatabase(databaseConfig config.Database) (string, error) {
 }
 
 func removeDumpFromFilesystem(File string) {
+	log.Infof("Removing File %s", File)
 	err := os.Remove(File)
 	if err != nil {
 		log.Errorln("Removing Dump-File failed: ", err)
