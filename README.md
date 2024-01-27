@@ -16,6 +16,7 @@ If you prefere to use the binary, you need to have a postgres-client install on 
 
 // TODO: Put in readme/docs, that the global s3 config has to be set in any case, but can be overridden for any database. You can just override the bucket and leave the default endpoint and keys as is, but if these need to be changed, you have to set all the values on the database if needed.
 && Specify that pg_dump has to be installed (same version as postgres)
+&& Specify that env var "BACKUP_PG_CONFIG_PATH" will be used to determine the configuration file
 
 ### Usage with docker
 

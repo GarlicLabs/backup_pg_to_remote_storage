@@ -11,6 +11,9 @@ spec:
           containers:
             - name: backup-pg-to-remote-storage
               image: backup-pg-to-remote-storage:latest
+              env:
+                - name: BACKUP_PG_CONFIG_PATH
+                  value: /etc/postgres-secret.yml
               envFrom:
                 - secretRef:
                     name: postgres-secret.yml

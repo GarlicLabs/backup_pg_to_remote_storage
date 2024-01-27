@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/go-playground/validator/v10"
@@ -38,11 +37,8 @@ type S3 struct {
 
 func GetConfig() Config {
 	log.Info("Reading config file")
-	asd, _ := os.ReadDir(".")
-	for _, e := range asd {
-		fmt.Println(e.Name())
-	}
-	f, err := os.ReadFile("config.yml")
+	configFile := getConfigPath()
+	f, err := os.ReadFile(configFile)
 
 	if err != nil {
 		log.Error(err)
@@ -56,6 +52,11 @@ func GetConfig() Config {
 	}
 
 	return config
+}
+
+func getConfigPath() string {
+	configPath := os.Getenv("BACKUP_PG_CONFIG_PATH")
+	return configPath
 }
 
 func validateStorageIsSet(fl validator.FieldLevel) bool {
