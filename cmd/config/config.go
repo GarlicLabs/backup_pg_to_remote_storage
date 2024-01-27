@@ -41,7 +41,8 @@ func GetConfig() Config {
 	f, err := os.ReadFile(configFile)
 
 	if err != nil {
-		log.Panic(err)
+		log.Error(err)
+		os.Exit(1)
 	}
 
 	log.Info("Unmarshalling config file")
@@ -50,7 +51,8 @@ func GetConfig() Config {
 	err = yaml.Unmarshal(f, &config)
 
 	if err != nil {
-		log.Panic(err)
+		log.Error(err)
+		os.Exit(1)
 	}
 
 	return config

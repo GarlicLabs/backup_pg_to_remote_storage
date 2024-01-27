@@ -2,6 +2,8 @@ package storage
 
 import (
 	"context"
+	"crypto/tls"
+	"net/http"
 	"time"
 
 	"github.com/garliclabs/backup-pg-to-remote-storage/cmd/config"
@@ -23,13 +25,21 @@ func (s3 S3Storage) initClient(s3Config config.S3) (*minio.Client, error) {
 
 	creds := credentials.NewStaticV4(s3Config.AccessKey, s3Config.SecretKey, "")
 
+	tlsConfig := &tls.Config{}
+	tlsConfig.InsecureSkipVerify = true
+
+	var transport http.RoundTripper = &http.Transport{
+		TLSClientConfig: tlsConfig,
+	}
+
 	options := &minio.Options{
-		Creds:  creds,
-		Secure: useSSL,
+		Creds:     creds,
+		Secure:    useSSL,
+		Transport: transport,
 	}
 	minioClient, err := minio.New(s3Config.Endpoint, options)
 	if err != nil {
-		log.Errorf("Connection to S3 Storage at %s failed.", s3Config.Endpoint)
+		log.Errorf("Connection to S3 Storage at %s failed: %s", s3Config.Endpoint, err)
 		return nil, err
 	} else {
 		log.Infof("Connection to S3 Storage at %s succeeded.", s3Config.Endpoint)

@@ -20,7 +20,8 @@ func main() {
 	cfg := config.GetConfig()
 	err := config.Validate(cfg)
 	if err != nil {
-		log.Panicf("Configuration is invalid see error: %s", err.Error())
+		log.Errorf("Configuration is invalid see error: %s", err.Error())
+		os.Exit(1)
 	}
 
 	var dumpFailed bool
@@ -44,7 +45,8 @@ func main() {
 		removeDumpFromFilesystem(dumpFile)
 	}
 	if dumpFailed {
-		log.Panic("At least one dump failed, please check logs for more information")
+		log.Error("At least one dump failed, please check logs for more information")
+		os.Exit(1)
 	}
 }
 
@@ -58,7 +60,8 @@ func getStorageProvider(cfg config.Storage) RemoteStorage {
 	if cfg.S3Config != (config.S3{}) {
 		return storage.S3Storage{}
 	} else {
-		log.Panicf("No storage provider configured")
+		log.Error("No storage provider configured")
+		os.Exit(1)
 		return nil
 	}
 }
