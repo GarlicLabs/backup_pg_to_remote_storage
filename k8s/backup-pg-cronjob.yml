@@ -13,15 +13,15 @@ spec:
               image: backup-pg-to-remote-storage:latest
               env:
                 - name: BACKUP_PG_CONFIG_PATH
-                  value: /etc/postgres-secret.yml
+                  value: /etc/backup-pg-secret.yml
               envFrom:
                 - secretRef:
-                    name: postgres-secret.yml
+                    name: backup-pg-secret.yml
               volumeMounts:
-                - name: postgres-secret
-                  mountPath: /etc/postgres-secret.yml
+                - name: backup-pg-secret
+                  mountPath: /etc/backup-pg-secret.yml
                   readOnly: true
           volumes:
-            - name: postgres-secret
+            - name: backup-pg-secret
               secret:
-                secretName: postgres-secret
+                secretName: backup-pg-secret
