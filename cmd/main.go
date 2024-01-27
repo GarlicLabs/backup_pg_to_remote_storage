@@ -47,6 +47,8 @@ func main() {
 	if dumpFailed {
 		log.Error("At least one dump failed, please check logs for more information")
 		os.Exit(1)
+	} else {
+		log.Info("Finished backuping all databases")
 	}
 }
 
