@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/go-playground/validator/v10"
@@ -49,7 +48,6 @@ func GetConfig() Config {
 
 	var config Config
 	err = yaml.Unmarshal(f, &config)
-	fmt.Print(config)
 
 	if err != nil {
 		log.Panic(err)

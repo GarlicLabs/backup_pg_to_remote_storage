@@ -27,20 +27,20 @@ func main() {
 		dbCfg := config.MapGlobalStorageToDbIfNotSet(database, cfg.GlobalStorageConfig)
 		dumpFile, err := dumpDatabase(dbCfg)
 		if err != nil {
-			log.Error(err)
 			removeDumpFromFilesystem(dumpFile)
+			log.Error(err)
 			continue
 		}
 		err = getStorageProvider(dbCfg.StorageConfig).Upload(dbCfg.StorageConfig, dumpFile)
 		if err != nil {
-			log.Error(err)
 			removeDumpFromFilesystem(dumpFile)
+			log.Error(err)
 			continue
 		}
 		err = getStorageProvider(dbCfg.StorageConfig).RetentionDelete(database)
 		if err != nil {
-			log.Error(err)
 			removeDumpFromFilesystem(dumpFile)
+			log.Error(err)
 			continue
 		}
 		removeDumpFromFilesystem(dumpFile)
@@ -72,7 +72,7 @@ func dumpDatabase(databaseConfig config.Database) (string, error) {
 	dump := dumper.Exec(pg.ExecOptions{StreamPrint: false})
 	if dump.Error != nil {
 		log.Error(dump.Output)
-		return "", dump.Error.Err
+		return dump.File, dump.Error.Err
 	} else {
 		log.Infof("Dumping Database %s at %s success", databaseConfig.Database, databaseConfig.Host)
 	}
