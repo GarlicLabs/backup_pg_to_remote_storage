@@ -3,35 +3,35 @@
 backup_pg_to_remote_storage is a small programm to dump postgres databases and store them into a remote storage.  
 ! Currently just s3 is supported as a remote storage, extending the program to support more remote storage can be easily implemented.  
 
-## TODO Usage
+## Usage
 
-!!The program will not fail if a database is not dumpable or if the storage has an issue it will continue with the next one.  
+The system on that you want to execute the program needs to have a postgres client installed, the container image ofcourse has it already installed.  
 
 The container image is weekly updated with the stable debian image.
 If you are using the container image make sure to pull regulary, the tag is always `latest`.
 
-If you prefere to use the binary, you need to have a postgres-client install on your operating system.  
+The program will iterate over all configured databases, if one backup should fail it will be continued with the next database. The program will then end with the exit code 1.  
 
-### Setup config
+You are able to set a global storage config or a storage config on each database you want to backup. If you have a global storage config and a storage config on a database, the config on the database will be used.  
 
-// TODO: Put in readme/docs, that the global s3 config has to be set in any case, but can be overridden for any database. You can just override the bucket and leave the default endpoint and keys as is, but if these need to be changed, you have to set all the values on the database if needed.
-&& Specify that pg_dump has to be installed (same version as postgres)
-&& Specify that env var "BACKUP_PG_CONFIG_PATH" will be used to determine the configuration file
+You can specify the config location with these enviroment variable: `BACKUP_PG_CONFIG_PATH`.  
 
 ### Usage with docker
 
 ```bash
-#TODO define config & mount volume with config into container
 docker run ghcr.io/garliclabs/backup-pg-to-remote-storage:latest
 ```
 
-### Just use the program
+### Usage with binary
 
 ```bash
-#The config.yml file inside the directory of the binary will be used, if there is no the process will end with an error
 go build
-./backup-pg-to-remote-storage
+BACKUP_PG_CONFIG_PATH=./config.yml ./backup-pg-to-remote-storage
 ```
+
+### Usage on k8s
+
+You can find a bunch of kubernetes manifest files in the `./k8s/` folder, create your own secret file and apply everything.  
 
 ### Kubernetes
 
