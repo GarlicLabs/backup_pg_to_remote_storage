@@ -2,6 +2,8 @@ FROM debian:stable
 
 WORKDIR /app
 
-COPY . /app
+RUN apt-get update && apt-get install postgresql-client -y
 
-ENTRYPOINT ["./backup-pg-to-remote-storage"]
+COPY . .
+
+ENTRYPOINT ["./backup_to_remote_storage"]

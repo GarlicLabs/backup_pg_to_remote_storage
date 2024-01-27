@@ -4,62 +4,71 @@ import (
 	"os"
 
 	"github.com/garliclabs/backup-pg-to-remote-storage/cmd/config"
+	"github.com/garliclabs/backup-pg-to-remote-storage/cmd/storage"
 	pg "github.com/habx/pg-commands"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 )
 
 type RemoteStorage interface {
-	Upload(cfg config.StorageConfig, file string)
-	Delete(cfg config.StorageConfig, file string)
-	RetentionDelete(cfg config.StorageConfig)
+	Upload(cfg config.Storage, file string) error
+	Delete(cfg config.Storage, file string) error
+	RetentionDelete(dbConfig config.Database) error
 }
 
 func main() {
 
-	cfg := getConfig()
-	err := config.ValidateConfig(cfg)
+	cfg := config.GetConfig()
+	err := config.Validate(cfg)
 	if err != nil {
-		log.Panicf("Configuration is invalid see error: %s", err.Error())
+		log.Errorf("Configuration is invalid see error: %s", err.Error())
+		os.Exit(1)
 	}
 
+	var dumpFailed bool
 	for _, database := range cfg.Databases {
-		dbCfg := config.PutGlobalStorageToDbIfNotSet(database, cfg.GlobalStorageConfig)
-		dumpFile := dumpDatabase(dbCfg)
-		getStorageProvider(dbCfg.StorageConfig).Upload()
-		getStorageProvider(dbCfg.StorageConfig).RetentionDelete()
+		dbCfg := config.MapGlobalStorageToDbIfNotSet(database, cfg.GlobalStorageConfig)
+		dumpFile, err := dumpDatabase(dbCfg)
+		if err != nil {
+			dumpFailed = errorHandling(err, dumpFile)
+			continue
+		}
+		err = getStorageProvider(dbCfg.StorageConfig).Upload(dbCfg.StorageConfig, dumpFile)
+		if err != nil {
+			dumpFailed = errorHandling(err, dumpFile)
+			continue
+		}
+		err = getStorageProvider(dbCfg.StorageConfig).RetentionDelete(dbCfg)
+		if err != nil {
+			dumpFailed = errorHandling(err, dumpFile)
+			continue
+		}
 		removeDumpFromFilesystem(dumpFile)
+	}
+	if dumpFailed {
+		log.Error("At least one dump failed, please check logs for more information")
+		os.Exit(1)
+	} else {
+		log.Info("Finished backuping all databases")
 	}
 }
 
-func getStorageProvider(cfg config.StorageConfig) RemoteStorage {
-	if cfg.S3Config != nil {
-		return S3Storage{}
+func errorHandling(err error, dumpFile string) bool {
+	removeDumpFromFilesystem(dumpFile)
+	log.Error(err)
+	return true
+}
+
+func getStorageProvider(cfg config.Storage) RemoteStorage {
+	if cfg.S3Config != (config.S3{}) {
+		return storage.S3Storage{}
 	} else {
-		log.Panicf("No storage provider configured")
+		log.Error("No storage provider configured")
+		os.Exit(1)
 		return nil
 	}
 }
 
-func getConfig() config.Config {
-	log.Info("Reading config file")
-	f, err := os.ReadFile("secret.yml")
-
-	if err != nil {
-		log.Error(err)
-	}
-
-	var config config.Config
-	err = yaml.Unmarshal(f, &config)
-
-	if err != nil {
-		log.Error(err)
-	}
-
-	return config
-}
-
-func dumpDatabase(databaseConfig config.DatabaseConfig) string {
+func dumpDatabase(databaseConfig config.Database) (string, error) {
 	log.Infof("Starting dumping Database %s at %s", databaseConfig.Database, databaseConfig.Host)
 	dumper, err := pg.NewDump(&pg.Postgres{
 		Host:     databaseConfig.Host,
@@ -69,21 +78,21 @@ func dumpDatabase(databaseConfig config.DatabaseConfig) string {
 		Password: databaseConfig.Password,
 	})
 	if err != nil {
-		log.Error(err)
+		return "", err
 	}
 
 	dump := dumper.Exec(pg.ExecOptions{StreamPrint: false})
 	if dump.Error != nil {
-		log.Error(dump.Error.Err)
 		log.Error(dump.Output)
-
+		return dump.File, dump.Error.Err
 	} else {
 		log.Infof("Dumping Database %s at %s success", databaseConfig.Database, databaseConfig.Host)
 	}
-	return dump.File
+	return dump.File, nil
 }
 
 func removeDumpFromFilesystem(File string) {
+	log.Infof("Removing File %s", File)
 	err := os.Remove(File)
 	if err != nil {
 		log.Errorln("Removing Dump-File failed: ", err)

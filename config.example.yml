@@ -13,6 +13,3 @@ databases:
     database: "postgres"
     password: "postgres"
     retention: 30
-  # accessKey: "accessKey"
-  # secretKey: "secretKey"
-  # bucket:    "test"
