@@ -45,10 +45,11 @@ func GetConfig() Config {
 		log.Panic(err)
 	}
 
-	fmt.Print(f)
+	log.Info("Unmarshalling config file")
 
 	var config Config
 	err = yaml.Unmarshal(f, &config)
+	fmt.Print(config)
 
 	if err != nil {
 		log.Panic(err)
@@ -85,6 +86,7 @@ func validateStorageIsSet(fl validator.FieldLevel) bool {
 
 // Validates given configuration with github.com/go-playground/validator/v10 library
 func Validate(cfg Config) error {
+	log.Info("Validate config")
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	validate.RegisterValidation("validateStorageIsSet", validateStorageIsSet)
 	err := validate.Struct(cfg)
