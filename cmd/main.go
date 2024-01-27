@@ -37,7 +37,7 @@ func main() {
 			dumpFailed = errorHandling(err, dumpFile)
 			continue
 		}
-		err = getStorageProvider(dbCfg.StorageConfig).RetentionDelete(database)
+		err = getStorageProvider(dbCfg.StorageConfig).RetentionDelete(dbCfg)
 		if err != nil {
 			dumpFailed = errorHandling(err, dumpFile)
 			continue

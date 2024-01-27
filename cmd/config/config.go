@@ -29,10 +29,11 @@ type Storage struct {
 }
 
 type S3 struct {
-	Endpoint  string `yaml:"endpoint" validate:"required"`
-	AccessKey string `yaml:"accessKey" validate:"required"`
-	SecretKey string `yaml:"secretKey" validate:"required"`
-	Bucket    string `yaml:"bucket" validate:"required"`
+	Endpoint           string `yaml:"endpoint" validate:"required"`
+	AccessKey          string `yaml:"accessKey" validate:"required"`
+	SecretKey          string `yaml:"secretKey" validate:"required"`
+	Bucket             string `yaml:"bucket" validate:"required"`
+	InsecureTlsAllowed bool   `yaml:"insecureTlsAllowed" validate:"omitempty"`
 }
 
 func GetConfig() Config {

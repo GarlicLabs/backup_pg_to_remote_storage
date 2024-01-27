@@ -20,22 +20,17 @@ type S3Storage struct {
 }
 
 func (s3 S3Storage) initClient(s3Config config.S3) (*minio.Client, error) {
-	log.Info("Initializing the S3 Client.")
+	log.Infof("Initializing the S3 Client for %s.", s3Config.Endpoint)
 	useSSL := true
 
 	creds := credentials.NewStaticV4(s3Config.AccessKey, s3Config.SecretKey, "")
 
-	tlsConfig := &tls.Config{}
-	tlsConfig.InsecureSkipVerify = true
-
-	var transport http.RoundTripper = &http.Transport{
-		TLSClientConfig: tlsConfig,
-	}
+	trspt := setHttpTransportConfig(s3Config)
 
 	options := &minio.Options{
 		Creds:     creds,
 		Secure:    useSSL,
-		Transport: transport,
+		Transport: trspt,
 	}
 	minioClient, err := minio.New(s3Config.Endpoint, options)
 	if err != nil {
@@ -45,6 +40,18 @@ func (s3 S3Storage) initClient(s3Config config.S3) (*minio.Client, error) {
 		log.Infof("Connection to S3 Storage at %s succeeded.", s3Config.Endpoint)
 	}
 	return minioClient, nil
+}
+
+func setHttpTransportConfig(s3Config config.S3) http.RoundTripper {
+	var transport http.RoundTripper
+	if s3Config.InsecureTlsAllowed {
+		tlsConfig := &tls.Config{}
+		tlsConfig.InsecureSkipVerify = true
+		transport = &http.Transport{
+			TLSClientConfig: tlsConfig,
+		}
+	}
+	return transport
 }
 
 func (s3 S3Storage) Upload(storageCfg config.Storage, file string) error {
