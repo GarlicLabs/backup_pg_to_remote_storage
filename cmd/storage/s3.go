@@ -22,11 +22,8 @@ type S3Storage struct {
 func (s3 S3Storage) initClient(s3Config config.S3) (*minio.Client, error) {
 	log.Infof("Initializing the S3 Client for %s.", s3Config.Endpoint)
 	useSSL := true
-
 	creds := credentials.NewStaticV4(s3Config.AccessKey, s3Config.SecretKey, "")
-
 	trspt := setHttpTransportConfig(s3Config)
-
 	options := &minio.Options{
 		Creds:     creds,
 		Secure:    useSSL,
@@ -44,12 +41,10 @@ func (s3 S3Storage) initClient(s3Config config.S3) (*minio.Client, error) {
 
 func setHttpTransportConfig(s3Config config.S3) http.RoundTripper {
 	var transport http.RoundTripper
-	if s3Config.InsecureTlsAllowed {
-		tlsConfig := &tls.Config{}
-		tlsConfig.InsecureSkipVerify = true
-		transport = &http.Transport{
-			TLSClientConfig: tlsConfig,
-		}
+	tlsConfig := &tls.Config{}
+	tlsConfig.InsecureSkipVerify = true
+	transport = &http.Transport{
+		TLSClientConfig: tlsConfig,
 	}
 	return transport
 }
