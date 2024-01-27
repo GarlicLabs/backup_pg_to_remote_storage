@@ -23,28 +23,35 @@ func main() {
 		log.Panicf("Configuration is invalid see error: %s", err.Error())
 	}
 
+	var dumpFailed bool
 	for _, database := range cfg.Databases {
 		dbCfg := config.MapGlobalStorageToDbIfNotSet(database, cfg.GlobalStorageConfig)
 		dumpFile, err := dumpDatabase(dbCfg)
 		if err != nil {
-			removeDumpFromFilesystem(dumpFile)
-			log.Error(err)
+			dumpFailed = errorHandling(err, dumpFile)
 			continue
 		}
 		err = getStorageProvider(dbCfg.StorageConfig).Upload(dbCfg.StorageConfig, dumpFile)
 		if err != nil {
-			removeDumpFromFilesystem(dumpFile)
-			log.Error(err)
+			dumpFailed = errorHandling(err, dumpFile)
 			continue
 		}
 		err = getStorageProvider(dbCfg.StorageConfig).RetentionDelete(database)
 		if err != nil {
-			removeDumpFromFilesystem(dumpFile)
-			log.Error(err)
+			dumpFailed = errorHandling(err, dumpFile)
 			continue
 		}
 		removeDumpFromFilesystem(dumpFile)
 	}
+	if dumpFailed {
+		log.Panic("At least one dump failed, please check logs for more information")
+	}
+}
+
+func errorHandling(err error, dumpFile string) bool {
+	removeDumpFromFilesystem(dumpFile)
+	log.Error(err)
+	return true
 }
 
 func getStorageProvider(cfg config.Storage) RemoteStorage {
