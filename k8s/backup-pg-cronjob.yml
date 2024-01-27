@@ -1,26 +1,31 @@
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: backup-pg-to-remote-storage
+  namespace: default
 spec:
   schedule: "0 0 * * 0"
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1
+  backoffLimit: 0
   jobTemplate:
     spec:
       template:
         spec:
           containers:
             - name: backup-pg-to-remote-storage
-              image: backup-pg-to-remote-storage:latest
+              image: ghcr.io/garliclabs/backup-pg-to-remote-storage:latest
               env:
                 - name: BACKUP_PG_CONFIG_PATH
-                  value: /etc/backup-pg-secret.yml
+                  value: /etc/backup-pg-secret/secret.yml
               envFrom:
                 - secretRef:
-                    name: backup-pg-secret.yml
+                    name: backup-pg-secret
               volumeMounts:
                 - name: backup-pg-secret
-                  mountPath: /etc/backup-pg-secret.yml
+                  mountPath: /etc/backup-pg-secret
                   readOnly: true
+          restartPolicy: Never
           volumes:
             - name: backup-pg-secret
               secret:
