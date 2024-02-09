@@ -6,7 +6,7 @@ on:
   push:
     branches:
       - main
-      - dev # just for testing
+      - dev
 
 jobs:
   build:
@@ -22,7 +22,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.21
+          go-version: 1.22
 
       - name: Install go dependencies
         run: make update
@@ -30,7 +30,7 @@ jobs:
       - name: govulncheck
         uses: golang/govulncheck-action@v1
         with:
-           go-version-input: 1.21
+           go-version-input: 1.22
            go-package: ./...
 
       - name: Run unit tests

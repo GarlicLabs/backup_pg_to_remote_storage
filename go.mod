@@ -1,6 +1,14 @@
 module github.com/garliclabs/backup-pg-to-remote-storage
 
-go 1.20
+go 1.22
+
+require (
+	github.com/go-playground/validator/v10 v10.16.0
+	github.com/habx/pg-commands v0.6.1
+	github.com/minio/minio-go/v7 v7.0.63
+	github.com/sirupsen/logrus v1.9.3
+	gopkg.in/yaml.v2 v2.4.0
+)
 
 require (
 	github.com/go-playground/validator/v10 v10.16.0
