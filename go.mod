@@ -1,6 +1,6 @@
 module github.com/garliclabs/backup-pg-to-remote-storage
 
-go 1.22.2
+go 1.22.3
 
 require (
 	github.com/go-playground/validator/v10 v10.16.0
